@@ -15,6 +15,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import axios from 'axios'
 import {base_url} from '../Constant/ApiUrl'
 import dayjs from 'dayjs';
+import { toast, Toaster } from "react-hot-toast";
 
 
 
@@ -72,60 +73,57 @@ const IntershipForm = () => {
       const truncateName = name.length > 10 ? `${name.substring(0, 10)}...` : name
       setSelectedFileName(truncateName)
     }
-
+    setSelectedFile(file)
   }
 
 
-  const handleSave = async(e) => {
-    e.preventDefault()
-
-
-
+  const handleSave = async (e) => {
+    e.preventDefault();
+  
     const remainingAmt = totalAmount - (onlineAmount ? onlineAmount : amount || 0);
-
-
-
-    const data = {
-      interName,
-      email,
-      address,
-      city,
-      state,
-      pincode,
-      country,
-      phone,
-      collegeName,
-      pursingDegree,
-      topicPrj,
-      selectedValue,
-      beginDate:beginDate ? dayjs(beginDate).format('YYYY-MM-DD'):null,
-      endDate:endDate ? dayjs(endDate).format("YYYY-MM-DD"):null,
-      applicationDate:applicationDate ? dayjs(applicationDate).format('YYYY-MM-DD') : null,
-      totalAmount,
-      Paymentmode,
-      onlineAmount,
-      amount,
-      selectedOption,
-      projectExp,
-      mode,
-      selectedFileName,
-      selectedFile,
-      remainingAmount: remainingAmt
+  
+    const formData = new FormData();
+    formData.append('selectedFile', selectedFile);
+    formData.append('interName', interName);
+    formData.append('email', email);
+    formData.append('address', address);
+    formData.append('city', city);
+    formData.append('state', state);
+    formData.append('pincode', pincode);
+    formData.append('country', country);
+    formData.append('phone', phone);
+    formData.append('collegeName', collegeName);
+    formData.append('pursingDegree', pursingDegree);
+    formData.append('topicPrj', topicPrj);
+    formData.append('selectedValue', selectedValue);
+    formData.append('beginDate', beginDate ? dayjs(beginDate).format('YYYY-MM-DD') : '');
+    formData.append('endDate', endDate ? dayjs(endDate).format('YYYY-MM-DD') : '');
+    formData.append('applicationDate', applicationDate ? dayjs(applicationDate).format('YYYY-MM-DD') : '');
+    formData.append('totalAmount', totalAmount);
+    formData.append('Paymentmode', Paymentmode);
+    formData.append('onlineAmount', onlineAmount);
+    formData.append('amount', amount);
+    formData.append('selectedOption', selectedOption);
+    formData.append('projectExp', projectExp);
+    formData.append('mode', mode);
+    formData.append('remainingAmount', remainingAmt);
+  
+    try {
+      const res = await axios.post(`${base_url}/intershipDetails.php`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      if (res.data.success) {
+        toast.success(res.data.message || 'Data inserted successfully!');
+      } else {
+        toast.error(res.data.message || 'Failed to insert data.');
+      }
+    } catch (error) {
+      console.error('Error during submission:', error);
+      toast.error('Error occurred while saving data.');
     }
-
-    try{
-      const res = await axios.post(`${base_url}/intershipDetails.php`,data,{
-        headers:{"Content-Type":'application/json'}
-      })
-      const result = res.data
-      console.log(result)
-    }
-    catch(error){
-      console.log(`Error in Data enters:${error}`)
-    }
-
-    console.log(data)
-
     setInterName('')
     setEmail('')
     setAddress('')
@@ -151,13 +149,18 @@ const IntershipForm = () => {
     setTotalAmount('')
     setTopicPrj('')
 
-  }
-
+  };
+  
   return (
     <Box component="form"
       sx={{ backgroundColor: 'white', display: 'flex', flexDirection: 'column', borderRadius: '10px', alignItems: 'center', px: '12px', width: '100%', '& .MuiTextField-root': { m: 1, backgroundColor: 'white' } }}
       noValidate
       autoComplete="off">
+
+        <Toaster
+                position="top-center"
+                reverseOrder={false}
+              />
       <h3>Registation-Form</h3>
       <Box sx={{ width: '80%' }}>
         <Box sx={{ display: 'flex', justifyContent: "center", borderRadius: '10px', width: '100%' }}>

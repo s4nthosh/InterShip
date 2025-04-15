@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
@@ -10,9 +10,14 @@ import InputLabel from '@mui/material/InputLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import Button from '@mui/material/Button';
 import { CssBaseline, GlobalStyles } from '@mui/material';
+import axios from 'axios';
+import { toast, Toaster } from 'react-hot-toast';
+import { base_url } from '../Constant/ApiUrl';
 
 const Loginpage = () => {
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -20,14 +25,42 @@ const Loginpage = () => {
     event.preventDefault();
   };
 
-  const handleMouseUpPassword = (event) => {
-    event.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    if (!userName || !password) {
+      toast.error('Please enter both username/userID and password');
+      return;
+    }
+
+    const data = {
+      userName,
+      password,
+    };
+
+    try {
+      const response = await axios.post(`${base_url}/AdminLogin.php`, data, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Login successful!');
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000); // 1 second delay for toast
+      } else {
+        toast.error(response.data.message || 'Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      toast.error('An error occurred. Please try again.');
+    }
   };
 
   return (
     <>
-      {/* Apply global styles to prevent scrolling */}
       <CssBaseline />
+      <Toaster position="top-center" reverseOrder={false} />
       <GlobalStyles
         styles={{
           html: { overflow: 'hidden', height: '100%' },
@@ -61,7 +94,9 @@ const Loginpage = () => {
             required
             id="outlined-required"
             label="User Name"
-            placeholder="User ID or User Name"
+            placeholder="User Name"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
             fullWidth
             sx={{ marginBottom: '20px' }}
           />
@@ -70,15 +105,14 @@ const Loginpage = () => {
             <OutlinedInput
               id="outlined-adornment-password"
               type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
-                    aria-label={
-                      showPassword ? 'hide the password' : 'display the password'
-                    }
+                    aria-label={showPassword ? 'hide the password' : 'display the password'}
                     onClick={handleClickShowPassword}
                     onMouseDown={handleMouseDownPassword}
-                    onMouseUp={handleMouseUpPassword}
                     edge="end"
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -99,6 +133,7 @@ const Loginpage = () => {
                 backgroundColor: '#1565c0',
               },
             }}
+            onClick={handleLogin}
           >
             Login
           </Button>

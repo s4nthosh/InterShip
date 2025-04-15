@@ -29,13 +29,42 @@ import FormsIcon from '@mui/icons-material/Description';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import { base_url } from '../Constant/ApiUrl';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+
+
 
 
 
 const drawerWidth = 240;
 
 export default function Homepage() {
+
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      const response = await axios.delete(`${base_url}/AdminLogin.php`, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+  
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1000);
+      } else {
+        toast.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('An error occurred during logout');
+    }
+  };
+
+
+
   const iconMap = {
     Dashboard: <DashboardIcon />,
     View: <VisibilityIcon />,
@@ -44,6 +73,9 @@ export default function Homepage() {
     Forms: <FormsIcon />,
     Tables: <TableChartIcon />
   };
+
+
+
 
 
   const [selectedPage, setSelectedPage] = useState('Dashboard');
@@ -76,6 +108,8 @@ export default function Homepage() {
     user.Name.toLowerCase().includes(search.toLowerCase())
   )
   .sort((a, b) => a.Name.localeCompare(b.Name))
+
+
 
   return (
     <Box sx={{ display: 'flex', height: '100', backgroundColor: '#F4F7FE' }}>
@@ -131,10 +165,7 @@ export default function Homepage() {
             text === 'View'
               ? handleViewClick
               : text === 'Logout'
-              ? () => {
-                  setSelectedPage(''); // Clear selectedPage
-                  // Optionally redirect to login or perform logout logic
-                }
+              ? handleLogout // Call handleLogout when "Logout" is clicked
               : () => setSelectedPage(text)
           }
           sx={{

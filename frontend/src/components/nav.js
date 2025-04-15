@@ -32,7 +32,7 @@ export default function nav({ info ,search,setSearch }) {
               borderRadius: '24px',
               height: '40px',
               px: 1,
-              backgroundColor: '#F4F7FE', // bg-main (customize as needed)
+              backgroundColor: '#F4F7FE',
             }}
           >
             <svg

@@ -15,9 +15,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import imageCompression from "browser-image-compression"
 import axios from 'axios'
 import { base_url } from '../Constant/ApiUrl'
-// import {useQuery  } from "@tanstack/react-query"
 import dayjs from 'dayjs';
 import DialogActions from '@mui/material/DialogActions';
+import { toast, Toaster } from "react-hot-toast";
 
 
 
@@ -100,59 +100,63 @@ const EditData = ({ editData, setOpen,refetch }) => {
     //remaining
 
     const handleUpdate = async (e) => {
-        e.preventDefault()
-        const remainingAmt = edittotalAmount-editonlineAmount-editamount || 0
-
-        console.log(remainingAmt)
-
+        e.preventDefault();
+        const remainingAmt = edittotalAmount - editonlineAmount - editamount || 0;
+    
         const updateData = {
-            Id:editData.Id,
-            interName:editinterName,
-            email:editemail,
-            address:editaddress,
-            city:editcity,
-            state:editstate,
-            pincode:editpincode,
-            country:editcountry,
-            phone:editphone,
-            college:editcollegeName,
-            pursingDegree:editpursingDegree,
-            topicPrj:edittopicPrj,
-            selectedValue:editselectedValue,
+            Id: editData.Id,
+            interName: editinterName,
+            email: editemail,
+            address: editaddress,
+            city: editcity,
+            state: editstate,
+            pincode: editpincode,
+            country: editcountry,
+            phone: editphone,
+            college: editcollegeName,
+            pursingDegree: editpursingDegree,
+            topicPrj: edittopicPrj,
+            selectedValue: editselectedValue,
             beginDate: editbeginDate ? dayjs(editbeginDate).format('YYYY-MM-DD') : null,
             endDate: editendDate ? dayjs(editendDate).format("YYYY-MM-DD") : null,
             applicationDate: editapplicationDate ? dayjs(editapplicationDate).format('YYYY-MM-DD') : null,
-            TotalAmount:edittotalAmount,
-            paymentmode:editPaymentmode,
-            onlineAmount:editonlineAmount,
-            amount:editamount,
-            selectedOption:editselectedOption,
-            projectExp:editprojectExp,
-            mode:editmode,
-            selectedFile:editselectedFile,
-            remainingAmount:remainingAmt
-
-        }
-
-
+            TotalAmount: edittotalAmount,
+            paymentmode: editPaymentmode,
+            onlineAmount: editonlineAmount,
+            amount: editamount,
+            selectedOption: editselectedOption,
+            projectExp: editprojectExp,
+            mode: editmode,
+            selectedFile: editselectedFile, // New file (if updated)
+            previousFile: editData.bonafideFile, // Previous file to be deleted
+            remainingAmount: remainingAmt,
+        };
+    
         try {
             const res = await axios.put(`${base_url}/intershipDetails.php`, updateData, {
-                headers: { "Content-Type": "application.json" }
-            })
-            console.log(res.data)
-            refetch()
-            setOpen(false)
+                headers: { "Content-Type": "application/json" },
+            });
+    
+            if (res.data.success) {
+                toast.success(res.data.message || 'User updated successfully!');
+                refetch();
+                setOpen(false);
+            } else {
+                toast.error(res.data.message || 'Failed to update user.');
+            }
+        } catch (error) {
+            console.log(`Error in editData ${error}`);
+            toast.error('Error in updating data. Please try again.');
         }
-        catch (error) {
-            console.log(`Error in editData ${error}`)
-        }
-    }
+    };
 
     return (
         <Box component="form"
+
             sx={{ backgroundColor: 'white', display: 'flex', flexDirection: 'column', borderRadius: '10px', alignItems: 'center', px: '12px', width: '100%', '& .MuiTextField-root': { m: 1, backgroundColor: 'white' } }}
             noValidate
             autoComplete="off">
+                
             <h3>Update</h3>
             <Box sx={{ width: '80%' }}>
                 <Box sx={{ display: 'flex', justifyContent: "center", borderRadius: '10px', width: '100%' }}>
@@ -332,7 +336,7 @@ const EditData = ({ editData, setOpen,refetch }) => {
                             sx={{ width: '100%', backgroundColor: 'blue' }}
                             startIcon={<CloudUploadIcon />}
                         >
-                            {editselectedFileName}
+                            {editselectedFile}
                             <VisuallyHiddenInput
                                 type="file"
                                 disabled={editselectedValue === 'no' || !editselectedValue}
